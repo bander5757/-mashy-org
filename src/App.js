@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage        from './pages/LoginPage';
 import DashboardPage    from './pages/DashboardPage';
+import SetupPage        from './pages/SetupPage';
 import AttendancePage   from './pages/AttendancePage';
 import MembersPage      from './pages/MembersPage';
 import InvitationsPage  from './pages/InvitationsPage';
@@ -22,6 +23,7 @@ function AppRoutes() {
       <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <LoginPage />} />
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<DashboardPage />} />
+        <Route path="org/:orgId/setup"        element={<SetupPage />} />
         <Route path="org/:orgId/attendance"  element={<AttendancePage />} />
         <Route path="org/:orgId/members"     element={<MembersPage />} />
         <Route path="org/:orgId/invitations" element={<InvitationsPage />} />

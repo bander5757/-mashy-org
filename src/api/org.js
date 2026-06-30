@@ -5,7 +5,10 @@ export const login = (identifier, password) =>
   api.post('/auth/login', { identifier, password });
 
 // ─── المنشآت ───────────────────────────────────
-export const getMyOrgs      = ()     => api.get('/orgs/mine');
+export const getMyOrgs          = ()             => api.get('/orgs/mine');
+export const getManualMembers   = (groupId)      => api.get(`/orgs/groups/${groupId}/manual-members`);
+export const addManualMember    = (groupId, data)=> api.post(`/orgs/groups/${groupId}/manual-members`, data);
+export const deleteManualMember = (memberId)     => api.delete(`/orgs/manual-members/${memberId}`);
 export const getOrg         = (id)   => api.get(`/orgs/${id}`);
 export const getDashboard   = ()     => api.get('/orgs/dashboard');
 export const getMyRole      = (id)   => api.get(`/orgs/${id}/my-role`);

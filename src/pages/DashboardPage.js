@@ -107,6 +107,7 @@ export default function DashboardPage() {
                 )}
 
                 <div className="org-actions">
+                  <button className="action-btn" onClick={e => { e.stopPropagation(); navigate(`/org/${org.id}/setup`); }}>⚙️ الإعداد</button>
                   <button className="action-btn" onClick={e => { e.stopPropagation(); navigate(`/org/${org.id}/attendance`); }}>📋 الحضور</button>
                   <button className="action-btn" onClick={e => { e.stopPropagation(); navigate(`/org/${org.id}/exits`); }}>🚪 الخروج</button>
                   <button className="action-btn" onClick={e => { e.stopPropagation(); navigate(`/org/${org.id}/members`); }}>👥 الأعضاء</button>
