@@ -92,6 +92,20 @@
 }
 .logout-btn:hover { opacity: 0.8; }
 
+.install-btn {
+  background: linear-gradient(135deg, #7C3AED, #6D28D9);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  width: 100%;
+  margin-bottom: 10px;
+  transition: opacity 0.15s;
+  text-align: center;
+}
+.install-btn:hover { opacity: 0.85; }
+
 /* ─── Main ────────────────────────────────── */
 .main-content {
   flex: 1;

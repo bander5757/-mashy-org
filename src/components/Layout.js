@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Layout.css';
@@ -9,6 +10,25 @@ const NAV = [
 export default function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    setIsStandalone(
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true
+    );
+    const handler = e => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    await installPrompt.userChoice;
+    setInstallPrompt(null);
+  };
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -31,6 +51,11 @@ export default function Layout() {
         </nav>
 
         <div className="sidebar-footer">
+          {installPrompt && !isStandalone && (
+            <button className="install-btn" onClick={handleInstall}>
+              📲 أضف للشاشة الرئيسية
+            </button>
+          )}
           <div className="user-chip">
             <div className="user-avatar">{user?.name?.[0] || '؟'}</div>
             <div className="user-info">
