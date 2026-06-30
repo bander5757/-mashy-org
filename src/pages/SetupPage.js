@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { QRCodeSVG } from 'qrcode.react';
 import {
-  getBranches, createBranch,
+  getBranches, createBranch, updateBranchLocation,
   getGroups, createGroup,
   getManualMembers, addManualMember, deleteManualMember,
 } from '../api/org';
@@ -19,11 +20,13 @@ export default function SetupPage() {
   const [branchModal, setBranchModal] = useState(false);
   const [groupModal,  setGroupModal]  = useState(null); // branchId
   const [memberModal, setMemberModal] = useState(null); // groupId
+  const [qrBranch, setQrBranch] = useState(null); // branch object
 
   const [branchName, setBranchName] = useState('');
   const [groupName,  setGroupName]  = useState('');
   const [memberForm, setMemberForm] = useState({ name: '', phone: '', role: 'member' });
   const [saving, setSaving] = useState(false);
+  const [locSaving, setLocSaving] = useState(false);
 
   // ─── Load branches ───────────────────────────
   const loadBranches = () =>
@@ -118,6 +121,26 @@ export default function SetupPage() {
     } catch (e) { toast.error(e.message); }
   };
 
+  // ─── تحديد موقع الفرع (GPS) ──────────────────
+  const handleSetLocation = (branch) => {
+    if (!navigator.geolocation) return toast.error('المتصفح لا يدعم تحديد الموقع');
+    setLocSaving(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          await updateBranchLocation(branch.id, { lat: latitude, lng: longitude, radius_meters: 150 });
+          toast.success('✅ تم تحديد موقع الفرع');
+          setBranches(bs => bs.map(b => b.id === branch.id ? { ...b, lat: latitude, lng: longitude, radius_meters: 150 } : b));
+          setQrBranch(q => q && q.id === branch.id ? { ...q, lat: latitude, lng: longitude, radius_meters: 150 } : q);
+        } catch (e) { toast.error(e.message); }
+        finally { setLocSaving(false); }
+      },
+      () => { toast.error('تعذر الحصول على الموقع'); setLocSaving(false); },
+      { enableHighAccuracy: true }
+    );
+  };
+
   return (
     <div style={{ maxWidth: 750 }}>
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -148,6 +171,10 @@ export default function SetupPage() {
                   <strong>{branch.name}</strong>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <button className="btn btn-ghost" style={{ fontSize: 12, padding: '4px 10px' }}
+                    onClick={e => { e.stopPropagation(); setQrBranch(branch); }}>
+                    📍 الحضور الذاتي
+                  </button>
                   <button className="btn btn-ghost" style={{ fontSize: 12, padding: '4px 10px' }}
                     onClick={e => { e.stopPropagation(); setGroupModal(branch.id); setGroupName(''); }}>
                     + مجموعة
@@ -277,6 +304,42 @@ export default function SetupPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* QR / Self-Checkin Modal */}
+      {qrBranch && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setQrBranch(null)}>
+          <div className="modal" style={{ textAlign: 'center' }}>
+            <div className="modal-title">📍 الحضور الذاتي — {qrBranch.name}</div>
+            <p style={{ color: 'var(--text-3)', fontSize: 13, marginBottom: 14 }}>
+              اطبع هذا الكود وضعه عند مدخل الفرع. سيطلب من الطالب مسحه + التحقق من موقعه عبر GPS لتسجيل حضوره.
+            </p>
+            <div style={{ background: '#fff', padding: 16, borderRadius: 12, display: 'inline-block' }}>
+              <QRCodeSVG value={qrBranch.checkin_code || ''} size={200} />
+            </div>
+            <div style={{ marginTop: 10, fontFamily: 'monospace', fontSize: 16, letterSpacing: 2 }}>
+              {qrBranch.checkin_code}
+            </div>
+
+            <div style={{ marginTop: 18, padding: 12, background: 'var(--surface2)', borderRadius: 10, textAlign: 'right' }}>
+              <div style={{ fontSize: 13, marginBottom: 8 }}>
+                {qrBranch.lat ? (
+                  <span>✅ تم تحديد الموقع ({Number(qrBranch.lat).toFixed(5)}, {Number(qrBranch.lng).toFixed(5)}) — نطاق {qrBranch.radius_meters || 150} متر</span>
+                ) : (
+                  <span style={{ color: 'var(--red)' }}>⚠️ لم يتم تحديد موقع الفرع بعد — الحضور الذاتي لن يعمل</span>
+                )}
+              </div>
+              <button className="btn btn-primary" style={{ width: '100%' }} disabled={locSaving}
+                onClick={() => handleSetLocation(qrBranch)}>
+                {locSaving ? 'جارٍ تحديد الموقع...' : '📡 تحديد موقع الفرع الحالي'}
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+              <button className="btn btn-ghost" onClick={() => setQrBranch(null)}>إغلاق</button>
+            </div>
           </div>
         </div>
       )}

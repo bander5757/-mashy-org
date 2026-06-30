@@ -17,6 +17,7 @@ export const createOrg      = (data) => api.post('/orgs', data);
 // ─── الفروع ────────────────────────────────────
 export const getBranches    = (orgId)        => api.get(`/orgs/${orgId}/branches`);
 export const createBranch   = (orgId, data)  => api.post(`/orgs/${orgId}/branches`, data);
+export const updateBranchLocation = (branchId, data) => api.patch(`/orgs/branches/${branchId}/location`, data);
 
 // ─── المجموعات ─────────────────────────────────
 export const getGroups      = (branchId)       => api.get(`/orgs/branches/${branchId}/groups`);
