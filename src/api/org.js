@@ -9,6 +9,7 @@ export const getMyOrgs      = ()     => api.get('/orgs/mine');
 export const getOrg         = (id)   => api.get(`/orgs/${id}`);
 export const getDashboard   = ()     => api.get('/orgs/dashboard');
 export const getMyRole      = (id)   => api.get(`/orgs/${id}/my-role`);
+export const createOrg      = (data) => api.post('/orgs', data);
 
 // ─── الفروع ────────────────────────────────────
 export const getBranches    = (orgId)        => api.get(`/orgs/${orgId}/branches`);
